@@ -29,6 +29,23 @@ function DeleteButton({ postId, commentId, callback }) {
         }
     })
 
+    const [deletePost] = useMutation(DELETE_POST_MUTATION, {
+        update(proxy) {
+          setConfirmOpen(false);
+          const data = proxy.readQuery({
+            query: FETCH_POSTS_QUERY,
+          });
+          proxy.writeQuery({
+            query: FETCH_POSTS_QUERY,
+            data: { getPosts: data.getPosts.filter((p) => p.id !== postId) },
+          });
+          if (callback) callback();
+        },
+        variables: {
+          postId,
+        },
+      });
+
     return (
         <>
             <MyPopup 
@@ -46,7 +63,7 @@ function DeleteButton({ postId, commentId, callback }) {
             <Confirm
                 open={confirmOpen}
                 onCancel={() => setConfirmOpen(false)}
-                onConfirm={deletePostOrMutation}
+                onConfirm={ commentId ? deletePostOrMutation : deletePost}
             />
         </>
     )
